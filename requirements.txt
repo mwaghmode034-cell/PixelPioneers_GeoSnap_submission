@@ -6,3 +6,4 @@ tifffile
 numpy
 matplotlib
 grad-cam
+opencv-python-headless
