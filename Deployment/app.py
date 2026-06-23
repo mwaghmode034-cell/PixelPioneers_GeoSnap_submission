@@ -18,24 +18,52 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown("""<style>.block-container{padding-top:2rem;padding-bottom:2rem;max-width:1200px;width:100%;}.stApp{overflow-x:hidden;}[data-testid="stSidebar"]{min-width:280px;max-width:320px;width:320px;}@media (max-width:1024px){[data-testid="stSidebar"]{min-width:240px;max-width:280px;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}@media (max-width:768px){[data-testid="stSidebar"]{min-width:100%;max-width:100%;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}""", unsafe_allow_html=True)
+st.markdown("""<style>
+.block-container{padding-top:2rem;padding-bottom:2rem;max-width:1200px;width:100%;}
+.stApp{overflow-x:hidden;}
+[data-testid="stSidebar"]{min-width:280px;max-width:320px;width:320px;}
+@media (max-width:1024px){
+    [data-testid="stSidebar"]{min-width:240px;max-width:280px;width:100%;}
+    .block-container{padding-left:1rem;padding-right:1rem;}
+}
+@media (max-width:768px){
+    [data-testid="stSidebar"]{min-width:100%;max-width:100%;width:100%;}
+    .block-container{padding-left:1rem;padding-right:1rem;}
+}
+/* Hide sidebar initially on small mobile screens */
+@media (max-width:600px){
+    [data-testid="stSidebar"]{display:none !important;}
+}
+</style>""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
-# Header
+# Header (logo + title)
 # ---------------------------------------------------
 
-logo = logo = Image.open(
-    BASE_DIR / "assets" / "logo.png"
-)
+logo_path = BASE_DIR / "assets" / "logo.png"
+if logo_path.exists():
+    logo = Image.open(logo_path)
+else:
+    logo = None
 
-col1, col2 = st.columns([1, 4])
+# make header more compact and vertically centered
+col1, col2 = st.columns([1, 8])
 with col1:
-    st.image(logo, width=100)
+    if logo is not None:
+        st.image(logo, width=120)
+    else:
+        st.write("")
 with col2:
+    # center the title/subtitle vertically within the column
+    st.markdown(
+        "<div style='display:flex;flex-direction:column;justify-content:center;height:100%;'>",
+        unsafe_allow_html=True,
+    )
     st.title("GeoSnap")
     st.subheader(
         "Land Use Classification and Environmental Insights from Satellite Imagery"
     )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("""
 Developed by **PixelPioneers**
@@ -121,7 +149,7 @@ rgb_transform = transforms.Compose([
 def load_rgb_model():
 
     ckpt = torch.load(
-        "efficientnet_b2_rgb_final.pth",
+        BASE_DIR / "efficientnet_b2_rgb_final.pth",
         map_location="cpu"
     )
 
@@ -154,7 +182,7 @@ def load_rgb_model():
 def load_ms_model():
 
     ckpt = torch.load(
-        "efficientnet_b2_ms_final.pth",
+        BASE_DIR / "efficientnet_b2_ms_final.pth",
         map_location="cpu"
     )
 
