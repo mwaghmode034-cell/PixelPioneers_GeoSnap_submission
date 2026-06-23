@@ -10,7 +10,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
+from pathlib import Path
 
+BASE_DIR = Path(__file__).parent
 st.set_page_config(
     page_title="GeoSnap",
     layout="wide"
@@ -22,7 +24,9 @@ st.markdown("""<style>.block-container{padding-top:2rem;padding-bottom:2rem;max-
 # Header
 # ---------------------------------------------------
 
-logo = Image.open("assets/logo.png")
+logo = logo = Image.open(
+    BASE_DIR / "assets" / "logo.png"
+)
 
 col1, col2 = st.columns([1, 4])
 with col1:
