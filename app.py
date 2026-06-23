@@ -6,21 +6,71 @@ from torchvision import models, transforms
 from PIL import Image
 import tifffile as tiff
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import cv2
+from datetime import datetime
 
 st.set_page_config(
     page_title="GeoSnap",
-    page_icon="🌍",
     layout="wide"
 )
 
-st.title("🌍 GeoSnap")
-st.subheader("Satellite Image Classification")
+# ---------------------------------------------------
+# Header
+# ---------------------------------------------------
 
-DEVICE = "cpu"
+st.title("GeoSnap")
+st.subheader(
+    "Land Use Classification and Environmental Insights from Satellite Imagery"
+)
 
-# =====================================================
-# RGB TRANSFORM (SAME AS NOTEBOOK)
-# =====================================================
+st.markdown("""
+Developed by **PixelPioneers**
+
+Survey of India × Cosmosoc GeoSnap Challenge
+
+Supported inputs:
+
+• RGB Images (.jpg, .jpeg, .png, .bmp, .webp)
+
+• Sentinel-2 Multispectral Images (.tif, .tiff)
+
+The application automatically detects the uploaded file type and loads the appropriate model.
+""")
+
+# ---------------------------------------------------
+# Sidebar
+# ---------------------------------------------------
+
+with st.sidebar:
+
+    st.header("About")
+
+    st.markdown("""
+### Team
+PixelPioneers
+
+### Models
+EfficientNet-B2 RGB
+
+EfficientNet-B2 Multispectral
+
+### Tasks
+
+Task 1:
+Land Use Classification
+
+Task 2:
+Model Explainability
+
+Task 3:
+Environmental Analysis
+""")
+
+# ---------------------------------------------------
+# RGB Transform
+# ---------------------------------------------------
 
 rgb_transform = transforms.Compose([
     transforms.Resize((64, 64)),
@@ -31,31 +81,36 @@ rgb_transform = transforms.Compose([
     )
 ])
 
-# =====================================================
-# LOAD RGB MODEL
-# =====================================================
+# ---------------------------------------------------
+# Model Loaders
+# ---------------------------------------------------
 
 @st.cache_resource
 def load_rgb_model():
 
-    checkpoint = torch.load(
+    ckpt = torch.load(
         "efficientnet_b2_rgb_final.pth",
-        map_location=DEVICE
+        map_location="cpu"
     )
 
-    classes = checkpoint["classes"]
+    classes = ckpt["classes"]
 
-    model = models.efficientnet_b2(weights=None)
+    model = models.efficientnet_b2(
+        weights=None
+    )
 
     n_features = model.classifier[1].in_features
 
     model.classifier = nn.Sequential(
-        nn.Dropout(p=0.3, inplace=True),
-        nn.Linear(n_features, len(classes))
+        nn.Dropout(0.3),
+        nn.Linear(
+            n_features,
+            len(classes)
+        )
     )
 
     model.load_state_dict(
-        checkpoint["model_state_dict"]
+        ckpt["model_state_dict"]
     )
 
     model.eval()
@@ -63,47 +118,43 @@ def load_rgb_model():
     return model, classes
 
 
-# =====================================================
-# LOAD MULTISPECTRAL MODEL
-# =====================================================
-
 @st.cache_resource
 def load_ms_model():
 
-    checkpoint = torch.load(
+    ckpt = torch.load(
         "efficientnet_b2_ms_final.pth",
-        map_location=DEVICE
+        map_location="cpu"
     )
 
-    classes = checkpoint["classes"]
+    classes = ckpt["classes"]
 
-    band_mean = checkpoint["band_mean"]
-    band_std = checkpoint["band_std"]
+    model = models.efficientnet_b2(
+        weights=None
+    )
 
-    model = models.efficientnet_b2(weights=None)
+    old = model.features[0][0]
 
-    old_conv = model.features[0][0]
-
-    new_conv = nn.Conv2d(
+    model.features[0][0] = nn.Conv2d(
         13,
-        old_conv.out_channels,
-        kernel_size=old_conv.kernel_size,
-        stride=old_conv.stride,
-        padding=old_conv.padding,
+        old.out_channels,
+        kernel_size=old.kernel_size,
+        stride=old.stride,
+        padding=old.padding,
         bias=False
     )
-
-    model.features[0][0] = new_conv
 
     n_features = model.classifier[1].in_features
 
     model.classifier = nn.Sequential(
-        nn.Dropout(p=0.3, inplace=True),
-        nn.Linear(n_features, len(classes))
+        nn.Dropout(0.3),
+        nn.Linear(
+            n_features,
+            len(classes)
+        )
     )
 
     model.load_state_dict(
-        checkpoint["model_state_dict"]
+        ckpt["model_state_dict"]
     )
 
     model.eval()
@@ -111,69 +162,89 @@ def load_ms_model():
     return (
         model,
         classes,
-        band_mean,
-        band_std
+        ckpt["band_mean"],
+        ckpt["band_std"]
     )
 
+# ---------------------------------------------------
+# File Upload
+# ---------------------------------------------------
 
-# =====================================================
-# UI
-# =====================================================
-
-model_choice = st.selectbox(
-    "Choose Input Type",
-    [
-        "RGB (.jpg/.png)",
-        "Multispectral (.tif/.tiff)"
+uploaded = st.file_uploader(
+    "Upload Satellite Image",
+    type=[
+        "jpg",
+        "jpeg",
+        "png",
+        "bmp",
+        "webp",
+        "tif",
+        "tiff"
     ]
 )
 
-if model_choice == "RGB (.jpg/.png)":
+if uploaded:
 
-    uploaded_file = st.file_uploader(
-        "Upload Image",
-        type=["jpg", "jpeg", "png"]
+    name = uploaded.name.lower()
+
+    rgb_ext = (
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".bmp",
+        ".webp"
     )
 
-else:
-
-    uploaded_file = st.file_uploader(
-        "Upload GeoTIFF",
-        type=["tif", "tiff"]
+    tif_ext = (
+        ".tif",
+        ".tiff"
     )
 
-# =====================================================
-# PREDICTION
-# =====================================================
+    # ===============================================
+    # RGB MODEL
+    # ===============================================
 
-if uploaded_file is not None:
+    if name.endswith(rgb_ext):
 
-    if model_choice == "RGB (.jpg/.png)":
+        st.info(
+            "RGB image detected. Using RGB classification model."
+        )
 
         model, classes = load_rgb_model()
 
         image = Image.open(
-            uploaded_file
+            uploaded
         ).convert("RGB")
 
-        st.image(
-            image,
-            caption="Uploaded Image",
-            use_container_width=True
-        )
+        x = rgb_transform(
+            image
+        ).unsqueeze(0)
 
-        x = rgb_transform(image)
-        x = x.unsqueeze(0)
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.image(
+                image,
+                caption="Uploaded Image",
+                use_container_width=True
+            )
 
         with torch.no_grad():
-
-            outputs = model(x)
+            logits = model(x)
             probs = F.softmax(
-                outputs,
+                logits,
                 dim=1
             )
 
+    # ===============================================
+    # TIFF MODEL
+    # ===============================================
+
     else:
+
+        st.info(
+            "Multispectral image detected. Using 13-band model."
+        )
 
         (
             model,
@@ -182,9 +253,9 @@ if uploaded_file is not None:
             band_std
         ) = load_ms_model()
 
-        img = tiff.imread(uploaded_file)
-
-        img = img.astype(np.float32)
+        img = tiff.imread(
+            uploaded
+        ).astype(np.float32)
 
         img = (
             img
@@ -199,65 +270,210 @@ if uploaded_file is not None:
             dtype=torch.float32
         ).unsqueeze(0)
 
-        st.success(
-            f"Loaded TIFF shape: {img.shape}"
-        )
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            rgb_preview = np.stack([
+                img[3],
+                img[2],
+                img[1]
+            ], axis=-1)
+
+            rgb_preview = (
+                rgb_preview
+                - rgb_preview.min()
+            ) / (
+                rgb_preview.max()
+                - rgb_preview.min()
+                + 1e-8
+            )
+
+            st.image(
+                rgb_preview,
+                caption="Preview"
+            )
 
         with torch.no_grad():
-
-            outputs = model(x)
+            logits = model(x)
             probs = F.softmax(
-                outputs,
+                logits,
                 dim=1
             )
+
+    # ===============================================
+    # Prediction
+    # ===============================================
 
     pred = torch.argmax(
         probs,
         dim=1
     ).item()
 
+    predicted = classes[pred]
+
     confidence = probs[0][pred].item()
 
-    st.success(
-        f"Prediction: {classes[pred]}"
-    )
+    with col2:
 
-    st.metric(
-        "Confidence",
-        f"{confidence*100:.2f}%"
-    )
+        st.subheader("Prediction")
 
-    st.subheader("Top Predictions")
-
-    top_probs, top_idx = torch.topk(
-        probs,
-        min(3, len(classes))
-    )
-
-    for p, i in zip(
-        top_probs[0],
-        top_idx[0]
-    ):
-        st.write(
-            f"{classes[i]} : {p.item()*100:.2f}%"
+        st.success(
+            predicted
         )
 
-    chart = {
-        classes[i]:
-        probs[0][i].item()
-        for i in range(len(classes))
-    }
-
-    st.bar_chart(chart)
-
-    with st.expander(
-        "Debug Information"
-    ):
-        st.write(
-            "Classes:",
-            classes
+        st.metric(
+            "Confidence",
+            f"{confidence*100:.2f}%"
         )
-        st.write(
-            "Probabilities:",
-            probs
+
+        st.subheader(
+            "Top Predictions"
         )
+
+        top_probs, top_idx = torch.topk(
+            probs,
+            min(
+                3,
+                len(classes)
+            )
+        )
+
+        for p, i in zip(
+            top_probs[0],
+            top_idx[0]
+        ):
+            st.write(
+                f"{classes[i]} : {p.item()*100:.2f}%"
+            )
+
+    # ===============================================
+    # Probability Chart
+    # ===============================================
+
+    st.subheader(
+        "Probability Distribution"
+    )
+
+    chart = pd.DataFrame({
+        "Class": classes,
+        "Probability":
+            probs[0].numpy()
+    })
+
+    st.bar_chart(
+        chart.set_index(
+            "Class"
+        )
+    )
+
+    # ===============================================
+    # TASK 3
+    # ===============================================
+
+    if name.endswith(tif_ext):
+
+        st.subheader(
+            "Environmental Analysis"
+        )
+
+        nir = img[7]
+        red = img[3]
+        green = img[2]
+        swir = img[10]
+
+        ndvi = (
+            nir - red
+        ) / (
+            nir + red + 1e-8
+        )
+
+        ndwi = (
+            green - nir
+        ) / (
+            green + nir + 1e-8
+        )
+
+        moisture = (
+            nir - swir
+        ) / (
+            nir + swir + 1e-8
+        )
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "Average NDVI",
+            f"{ndvi.mean():.3f}"
+        )
+
+        c2.metric(
+            "Average NDWI",
+            f"{ndwi.mean():.3f}"
+        )
+
+        c3.metric(
+            "Moisture Index",
+            f"{moisture.mean():.3f}"
+        )
+
+        fig, ax = plt.subplots(
+            1,
+            3,
+            figsize=(15, 4)
+        )
+
+        ax[0].imshow(
+            ndvi,
+            cmap="RdYlGn"
+        )
+        ax[0].set_title(
+            "NDVI"
+        )
+
+        ax[1].imshow(
+            ndwi,
+            cmap="Blues"
+        )
+        ax[1].set_title(
+            "NDWI"
+        )
+
+        ax[2].imshow(
+            moisture,
+            cmap="viridis"
+        )
+        ax[2].set_title(
+            "Moisture"
+        )
+
+        for a in ax:
+            a.axis("off")
+
+        st.pyplot(fig)
+
+    # ===============================================
+    # Report
+    # ===============================================
+
+    report = f"""
+GeoSnap Classification Report
+
+Prediction:
+{predicted}
+
+Confidence:
+{confidence*100:.2f} %
+
+Timestamp:
+{datetime.now()}
+
+Generated by:
+PixelPioneers
+"""
+
+    st.download_button(
+        "Download Report",
+        report,
+        file_name="geosnap_report.txt"
+    )
