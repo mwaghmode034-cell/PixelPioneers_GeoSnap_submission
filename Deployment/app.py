@@ -22,10 +22,16 @@ st.markdown("""<style>.block-container{padding-top:2rem;padding-bottom:2rem;max-
 # Header
 # ---------------------------------------------------
 
-st.title("GeoSnap")
-st.subheader(
-    "Land Use Classification and Environmental Insights from Satellite Imagery"
-)
+logo = Image.open("assets/logo.png")
+
+col1, col2 = st.columns([1, 4])
+with col1:
+    st.image(logo, width=100)
+with col2:
+    st.title("GeoSnap")
+    st.subheader(
+        "Land Use Classification and Environmental Insights from Satellite Imagery"
+    )
 
 st.markdown("""
 Developed by **PixelPioneers**
