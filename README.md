@@ -175,14 +175,14 @@ The notebook was developed and tested on:
 ---
 
 ## Step 1: Open Notebook
-link :- https://colab.research.google.com/drive/1URYcL6djkYvssyWp6nmNKN3spcLTYpeG
-Open:
 
+Open: 
 ```text
-PixelPioneers_GeoSnap.ipynb
+ https://colab.research.google.com/drive/1URYcL6djkYvssyWp6nmNKN3spcLTYpeG
 ```
-
 in Google Colab.
+
+Or Upload PixelPioneers_GeoSnap.ipynb to Drive
 
 ---
 
@@ -263,7 +263,7 @@ On Google Colab T4 GPU:
 
 | Task                   | Runtime     |
 | ---------------------- | ----------- |
-| RGB Training           | ~14 minutes |
+| RGB Training           | ~13 minutes |
 | Multispectral Training | ~10 minutes |
 | Total                  | ~25 minutes |
 
