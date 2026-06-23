@@ -177,9 +177,7 @@ The notebook was developed and tested on:
 ## Step 1: Open Notebook
 
 Open: 
-```text
  https://colab.research.google.com/drive/1URYcL6djkYvssyWp6nmNKN3spcLTYpeG
-```
 in Google Colab.
 
 Or Upload PixelPioneers_GeoSnap.ipynb to Drive
