@@ -4,7 +4,7 @@
 
 **Team PixelPioneers**
 Priyanshu • Shravan • Mahesh • Chinmay
-1st Year B.Tech (CSE), IIT Dharwad
+1st Year B.Tech , IIT Dharwad
 
 ---
 
