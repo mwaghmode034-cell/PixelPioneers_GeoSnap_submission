@@ -16,7 +16,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown("""<style>.block-container{    padding-top:2rem;    padding-bottom:2rem;    max-width:1200px;}[data-testid="stSidebar"]{    min-width:280px;    max-width:280px;}@media (max-width:768px){    [data-testid="stSidebar"]{        min-width:100%;        max-width:100%;    }    .block-container{        padding-left:1rem;        padding-right:1rem;    }}</style>""", unsafe_allow_html=True)
+st.markdown("""<style>.block-container{padding-top:2rem;padding-bottom:2rem;max-width:1200px;width:100%;}.stApp{overflow-x:hidden;}[data-testid="stSidebar"]{min-width:280px;max-width:320px;width:320px;}@media (max-width:1024px){[data-testid="stSidebar"]{min-width:240px;max-width:280px;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}@media (max-width:768px){[data-testid="stSidebar"]{min-width:100%;max-width:100%;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
 # Header
@@ -37,6 +37,13 @@ Supported inputs:
 • Sentinel-2 Multispectral Images (.tif, .tiff)
 
 The application automatically detects the uploaded file type and loads the appropriate model.
+
+### Upload Suggestions for Better Results
+• Use clear, high-resolution satellite imagery.
+• Prefer cloud-free, well-lit scenes.
+• For multispectral input, upload 13-band Sentinel-2 TIFFs.
+• Avoid very small or heavily compressed images.
+• Wait until the full upload completes before predictions.
 """)
 
 # ---------------------------------------------------
@@ -49,7 +56,10 @@ with st.sidebar:
 
     st.markdown("""
 ### Team
-PixelPioneers
+Priyanshu
+Mahesh
+Shravan
+Chinmay
 
 ### Models
 **EfficientNet-B2 RGB**
