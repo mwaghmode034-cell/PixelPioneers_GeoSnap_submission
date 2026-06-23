@@ -129,7 +129,7 @@ rgb_transform = transforms.Compose([
 def load_rgb_model():
 
     ckpt = torch.load(
-        BASE_DIR / "models" / "efficientnet_b2_rgb_final.pth",
+        BASE_DIR.parent / "models" / "efficientnet_b2_rgb_final.pth",
         map_location="cpu"
     )
 
@@ -162,7 +162,7 @@ def load_rgb_model():
 def load_ms_model():
 
     ckpt = torch.load(
-        BASE_DIR / "models" / "efficientnet_b2_ms_final.pth",
+        BASE_DIR.parent / "models" / "efficientnet_b2_ms_final.pth",
         map_location="cpu"
     )
 
