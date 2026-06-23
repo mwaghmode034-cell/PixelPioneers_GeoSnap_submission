@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import cv2
 from datetime import datetime
 from pathlib import Path
+import base64
 
 BASE_DIR = Path(__file__).parent
 st.set_page_config(
@@ -21,33 +22,28 @@ st.set_page_config(
 st.markdown("""<style>.block-container{padding-top:2rem;padding-bottom:2rem;max-width:1200px;width:100%;}.stApp{overflow-x:hidden;}[data-testid="stSidebar"]{min-width:280px;max-width:320px;width:320px;}@media (max-width:1024px){[data-testid="stSidebar"]{min-width:240px;max-width:280px;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}@media (max-width:768px){[data-testid="stSidebar"]{min-width:100%;max-width:100%;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
-# Header (logo + title)
+# Header (logo + title) — embedded image + HTML for precise layout
 # ---------------------------------------------------
 
 logo_path = BASE_DIR / "assets" / "logo.png"
 if logo_path.exists():
-    logo = Image.open(logo_path)
+    with open(logo_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    logo_img = f"<img src=\"data:image/png;base64,{b64}\" style=\"width:120px;height:120px;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,0.25);object-fit:cover;\" />"
 else:
-    logo = None
+    logo_img = ""
 
-# make header more compact and vertically centered
-col1, col2 = st.columns([1, 8])
-with col1:
-    if logo is not None:
-        st.image(logo, width=120)
-    else:
-        st.write("")
-with col2:
-    # center the title/subtitle vertically within the column
-    st.markdown(
-        "<div style='display:flex;flex-direction:column;justify-content:center;height:100%;'>",
-        unsafe_allow_html=True,
-    )
-    st.title("GeoSnap")
-    st.subheader(
-        "Land Use Classification and Environmental Insights from Satellite Imagery"
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+header_html = f"""
+<div style='display:flex;align-items:center;gap:24px;padding:8px 0;'>
+  {logo_img}
+  <div>
+    <h1 style='margin:0;font-size:44px;color:#222;'>GeoSnap</h1>
+    <p style='margin:6px 0 0 0;color:#444;font-size:18px;'>Land Use Classification and Environmental Insights from Satellite Imagery</p>
+  </div>
+</div>
+"""
+
+st.markdown(header_html, unsafe_allow_html=True)
 
 st.markdown("""
 Developed by **PixelPioneers**
