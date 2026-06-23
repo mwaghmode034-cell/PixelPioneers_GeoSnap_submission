@@ -18,23 +18,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown("""<style>
-.block-container{padding-top:2rem;padding-bottom:2rem;max-width:1200px;width:100%;}
-.stApp{overflow-x:hidden;}
-[data-testid="stSidebar"]{min-width:280px;max-width:320px;width:320px;}
-@media (max-width:1024px){
-    [data-testid="stSidebar"]{min-width:240px;max-width:280px;width:100%;}
-    .block-container{padding-left:1rem;padding-right:1rem;}
-}
-@media (max-width:768px){
-    [data-testid="stSidebar"]{min-width:100%;max-width:100%;width:100%;}
-    .block-container{padding-left:1rem;padding-right:1rem;}
-}
-/* Hide sidebar initially on small mobile screens */
-@media (max-width:600px){
-    [data-testid="stSidebar"]{display:none !important;}
-}
-</style>""", unsafe_allow_html=True)
+st.markdown("""<style>.block-container{padding-top:2rem;padding-bottom:2rem;max-width:1200px;width:100%;}.stApp{overflow-x:hidden;}[data-testid="stSidebar"]{min-width:280px;max-width:320px;width:320px;}@media (max-width:1024px){[data-testid="stSidebar"]{min-width:240px;max-width:280px;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}@media (max-width:768px){[data-testid="stSidebar"]{min-width:100%;max-width:100%;width:100%;}.block-container{padding-left:1rem;padding-right:1rem;}}""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
 # Header (logo + title)
