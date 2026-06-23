@@ -1,9 +1,9 @@
 streamlit
 torch
 torchvision
-Pillow
-tifffile
 numpy
+pandas
+pillow
+tifffile
 matplotlib
-grad-cam
-opencv-python-headless
+scikit-learn
